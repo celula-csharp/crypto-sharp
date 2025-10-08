@@ -1,8 +1,34 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model List<SeguimientoCriptomonedas.Models.Coin>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Top 10 Criptomonedas</h2>
+
+@if (Model.Any())
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Símbolo</th>
+            <th>Precio (USD)</th>
+            <th>Cambio 24h (%)</th>
+            <th>Ranking</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach(var coin in Model)
+        {
+            <tr>
+                <td>@coin.Name</td>
+                <td>@coin.Symbol.ToUpper()</td>
+                <td>@coin.CurrentPrice?.ToString("F2")</td>
+                <td>@coin.PriceChange24h?.ToString("F2")</td>
+                <td>@coin.MarketCapRank</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No se encontraron monedas para mostrar.</p>
+}

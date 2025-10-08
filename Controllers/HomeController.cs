@@ -1,31 +1,32 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SeguimientoCriptomonedas.Services;
 using SeguimientoCriptomonedas.Models;
 
-namespace SeguimientoCriptomonedas.Controllers;
-
-public class HomeController : Controller
+namespace SeguimientoCriptomonedas.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly CoinGeckoService _coinService;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(CoinGeckoService coinService)
+        {
+            _coinService = coinService;
+        }
+        
+        public async Task<IActionResult> Index()
+        {
+            List<Coin> topCoins;
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+            try
+            {
+                topCoins = await _coinService.GetTopCoinsAsync(10);
+            }
+            catch
+            {
+                topCoins = new List<Coin>();
+            }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(topCoins);
+        }
     }
 }

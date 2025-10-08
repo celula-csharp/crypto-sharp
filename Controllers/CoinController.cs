@@ -19,8 +19,7 @@ namespace SeguimientoCriptomonedas.Controllers
 
         public async Task<IActionResult> Index()
         {
-            //  Sección de prueba: crear datos iniciales si la DB está vacía
-            //  Esta sección se borrará después, solo para testing
+            // 🔹 Crear datos iniciales si la DB está vacía (solo testing temporal)
             if (!_dbContext.Users.Any())
             {
                 var user = new User { Username = "osita", Email = "osita@email.com", PasswordHash = "1234" };
@@ -31,7 +30,6 @@ namespace SeguimientoCriptomonedas.Controllers
                     Symbol = "BTC", 
                     Name = "Bitcoin", 
                     CoinGeckoId = "bitcoin",
-                    CurrentPrice = 0, 
                     LastUpdated = DateTime.UtcNow 
                 };
 
@@ -40,7 +38,6 @@ namespace SeguimientoCriptomonedas.Controllers
                     Symbol = "ETH", 
                     Name = "Ethereum", 
                     CoinGeckoId = "ethereum",
-                    CurrentPrice = 0, 
                     LastUpdated = DateTime.UtcNow 
                 };
 
@@ -53,37 +50,62 @@ namespace SeguimientoCriptomonedas.Controllers
 
                 await _dbContext.SaveChangesAsync();
             }
-            
+
             var favoriteCoins = await _dbContext.FavoriteCoins
                 .Include(fc => fc.Coin)
                 .Include(fc => fc.User)
                 .ToListAsync();
 
-            var coinsToUpdate = favoriteCoins
-                .Select(fc => fc.Coin!)
-                .Distinct()
-                .ToList();
-            
-            var tasks = coinsToUpdate.Select(c => _coinService.GetCoinDataAsync(c.CoinGeckoId));
-            var results = await Task.WhenAll(tasks);
+            List<Coin> coinsToShow;
 
-            for (int i = 0; i < coinsToUpdate.Count; i++)
+            if (favoriteCoins.Any())
             {
-                var coin = coinsToUpdate[i];
-                var updatedCoin = results[i];
+                coinsToShow = favoriteCoins
+                    .Select(fc => fc.Coin!)
+                    .Where(c => !string.IsNullOrEmpty(c.CoinGeckoId)) 
+                    .Distinct()
+                    .ToList();
+                
+                var tasks = coinsToShow
+                    .Select(c => SafeGetCoinDataAsync(c.CoinGeckoId))
+                    .ToList();
 
-                if (updatedCoin != null)
+                var results = await Task.WhenAll(tasks);
+
+                for (int i = 0; i < coinsToShow.Count; i++)
                 {
-                    coin.CurrentPrice = updatedCoin.CurrentPrice ?? 0m;
-                    coin.PriceChange24h = updatedCoin.PriceChange24h ?? 0m;
-                    coin.MarketCapRank = updatedCoin.MarketCapRank ?? 0;
-                    coin.LastUpdated = DateTime.UtcNow;
+                    var coin = coinsToShow[i];
+                    var updatedCoin = results[i];
+
+                    if (updatedCoin != null)
+                    {
+                        coin.CurrentPrice = updatedCoin.CurrentPrice ?? 0m;
+                        coin.PriceChange24h = updatedCoin.PriceChange24h ?? 0m;
+                        coin.MarketCapRank = updatedCoin.MarketCapRank ?? 0;
+                        coin.LastUpdated = DateTime.UtcNow;
+                    }
                 }
+
+                await _dbContext.SaveChangesAsync();
             }
-
-            await _dbContext.SaveChangesAsync();
-
-            return View(coinsToUpdate);
+            else
+            {
+                coinsToShow = await _coinService.GetTopCoinsAsync(10);
+            }
+            
+            return View(coinsToShow);
+        }
+        
+        private async Task<Coin?> SafeGetCoinDataAsync(string coinGeckoId)
+        {
+            try
+            {
+                return await _coinService.GetCoinDataAsync(coinGeckoId);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

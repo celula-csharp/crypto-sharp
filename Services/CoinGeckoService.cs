@@ -11,7 +11,8 @@ namespace SeguimientoCriptomonedas.Services
         {
             _httpClient = httpClient;
         }
-        
+
+        // Obtiene las top N monedas
         public async Task<List<Coin>> GetTopCoinsAsync(int count = 10)
         {
             var url = $"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page={count}&page=1&sparkline=false";
@@ -19,14 +20,28 @@ namespace SeguimientoCriptomonedas.Services
             try
             {
                 var response = await _httpClient.GetAsync(url);
+                Console.WriteLine($"Status code: {response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
-                var coins = JsonSerializer.Deserialize<List<CoinGeckoDto>>(json);
+                Console.WriteLine("JSON recibido: " + json.Substring(0, Math.Min(200, json.Length)));
 
-                return coins!.Select(c => new Coin
+                var options = new JsonSerializerOptions
                 {
-                    Symbol = c.symbol,
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var coins = JsonSerializer.Deserialize<List<CoinGeckoDto>>(json, options);
+
+                if (coins == null || !coins.Any())
+                {
+                    Console.WriteLine("No se obtuvieron monedas de CoinGecko");
+                    return new List<Coin>();
+                }
+
+                return coins.Select(c => new Coin
+                {
+                    Symbol = c.symbol.ToUpper(),
                     Name = c.name,
                     CurrentPrice = c.current_price,
                     PriceChange24h = c.price_change_percentage_24h,
@@ -34,30 +49,44 @@ namespace SeguimientoCriptomonedas.Services
                     LastUpdated = DateTime.UtcNow
                 }).ToList();
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("Error en GetTopCoinsAsync: " + ex.Message);
                 return new List<Coin>();
             }
         }
-        
-        public async Task<Coin?> GetCoinDataAsync(string symbol)
+
+        // Obtiene los datos de una moneda específica
+        public async Task<Coin?> GetCoinDataAsync(string coinGeckoId)
         {
-            var url = $"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={symbol}&order=market_cap_desc&per_page=1&page=1&sparkline=false";
+            var url = $"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={coinGeckoId}&order=market_cap_desc&per_page=1&page=1&sparkline=false";
 
             try
             {
                 var response = await _httpClient.GetAsync(url);
+                Console.WriteLine($"Status code (GetCoinDataAsync): {response.StatusCode}");
                 response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
-                var coins = JsonSerializer.Deserialize<List<CoinGeckoDto>>(json);
+                Console.WriteLine("JSON recibido (GetCoinDataAsync): " + json.Substring(0, Math.Min(200, json.Length)));
 
-                var c = coins!.FirstOrDefault();
-                if (c == null) return null;
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var coins = JsonSerializer.Deserialize<List<CoinGeckoDto>>(json, options);
+
+                var c = coins?.FirstOrDefault();
+                if (c == null)
+                {
+                    Console.WriteLine($"No se encontró la moneda con id {coinGeckoId}");
+                    return null;
+                }
 
                 return new Coin
                 {
-                    Symbol = c.symbol,
+                    Symbol = c.symbol.ToUpper(),
                     Name = c.name,
                     CurrentPrice = c.current_price,
                     PriceChange24h = c.price_change_percentage_24h,
@@ -65,13 +94,14 @@ namespace SeguimientoCriptomonedas.Services
                     LastUpdated = DateTime.UtcNow
                 };
             }
-            catch
+            catch (Exception ex)
             {
-                return null; // fallback si falla la API
+                Console.WriteLine("Error en GetCoinDataAsync: " + ex.Message);
+                return null;
             }
         }
 
-        //  DTO interno para deserializar JSON de CoinGecko
+        // DTO interno para deserializar JSON de CoinGecko
         private class CoinGeckoDto
         {
             public string id { get; set; } = string.Empty;

@@ -6,10 +6,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=CryptoDb.db"));
 
-builder.Services.AddHttpClient<CoinGeckoService>();
+builder.Services.AddHttpClient<CoinGeckoService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "SeguimientoCriptomonedasApp/1.0");
+});
 
 var app = builder.Build();
 
@@ -19,7 +32,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
 app.UseRouting();
+
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

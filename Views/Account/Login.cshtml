@@ -1,0 +1,9 @@
+@model SeguimientoCriptomonedas.Models.LoginModel
+
+<h2>Login</h2>
+
+<form asp-action="Login" method="post">
+    <input asp-for="Email" type="email" placeholder="Email" />
+    <input asp-for="Password" type="password" placeholder="Contraseña" />
+    <button type="submit">Iniciar sesión</button>
+</form>

@@ -1,0 +1,11 @@
+@model SeguimientoCriptomonedas.Models.RegisterModel
+
+<h2>Registro</h2>
+
+<form asp-action="Register" method="post">
+    <input asp-for="Username" placeholder="Usuario" />
+    <input asp-for="Email" type="email" placeholder="Email" />
+    <input asp-for="Password" type="password" placeholder="Contraseña" />
+    <input asp-for="ConfirmPassword" type="password" placeholder="Confirmar Contraseña" />
+    <button type="submit">Registrar</button>
+</form>
