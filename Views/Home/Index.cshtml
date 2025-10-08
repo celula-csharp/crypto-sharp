@@ -2,31 +2,42 @@
 
 <h2>Top 10 Criptomonedas</h2>
 
+
+
 @if (Model.Any())
 {
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Símbolo</th>
-            <th>Precio (USD)</th>
-            <th>Cambio 24h (%)</th>
-            <th>Ranking</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach(var coin in Model)
+    <div class="flex flex-col gap-2">
+        <!-- Header -->
+        <div class="grid grid-cols-[200px_repeat(5,1fr)] gap-2 p-2 border-b border-b-gray-200 text-sm font-medium text-gray-600">
+            <div class="text-left">Nombre</div>
+            <div class="text-center">Símbolo</div>
+            <div class="text-center">Precio</div>
+            <div class="text-center">Precio (USD)</div>
+            <div class="text-center">Cambio 24h (%)</div>
+            <div class="text-center">Ranking</div>
+        </div>
+
+        <!-- Body -->
+        @foreach (var coin in @Model)
         {
-            <tr>
-                <td>@coin.Name</td>
-                <td>@coin.Symbol.ToUpper()</td>
-                <td>@coin.CurrentPrice?.ToString("F2")</td>
-                <td>@coin.PriceChange24h?.ToString("F2")</td>
-                <td>@coin.MarketCapRank</td>
-            </tr>
+            <button class="grid grid-cols-[200px_repeat(5,1fr)] gap-2 p-2 border !border-transparent !rounded-2xl hover:bg-gray-100 hover:!border-gray-200 transition duration-[.1s] ease-in-out text-sm text-gray-800 cursor-pointer items-center">
+                <div class="flex items-center gap-2">
+                    <img class="w-6 h-6 object-contain" src="@coin.Image" alt="@coin.Name Logo"/>
+                    <span class="font-semibold">@coin.Name</span>
+                </div>
+
+                <div class="text-center text-gray-500">@coin.Symbol</div>
+
+                <div class="text-center">@coin.CurrentPrice</div>
+
+                <div class="text-center">@coin.CurrentPrice?.ToString("F2")</div>
+
+                <div class="text-center text-green-600 font-medium">@coin.PriceChange24h?.ToString("F2")</div>
+
+                <div class="text-center">@coin.MarketCapRank</div>
+            </button>  
         }
-        </tbody>
-    </table>
+    </div>
 }
 else
 {

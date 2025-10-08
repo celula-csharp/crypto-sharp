@@ -43,6 +43,7 @@ namespace SeguimientoCriptomonedas.Services
                 {
                     Symbol = c.symbol.ToUpper(),
                     Name = c.name,
+                    Image = c.image,
                     CurrentPrice = c.current_price,
                     PriceChange24h = c.price_change_percentage_24h,
                     MarketCapRank = c.market_cap_rank,
@@ -107,6 +108,7 @@ namespace SeguimientoCriptomonedas.Services
             public string id { get; set; } = string.Empty;
             public string symbol { get; set; } = string.Empty;
             public string name { get; set; } = string.Empty;
+            public string image { get; set; } = string.Empty;
             public decimal current_price { get; set; }
             public decimal? price_change_percentage_24h { get; set; }
             public int? market_cap_rank { get; set; }
