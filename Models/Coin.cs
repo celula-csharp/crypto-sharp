@@ -18,6 +18,9 @@ namespace SeguimientoCriptomonedas.Models
         public int? MarketCapRank { get; set; }
         
         public DateTime? LastUpdated { get; set; }
+
+        [Required, MaxLength(100)]
+        public string CoinGeckoId { get; set; } = string.Empty; // nuevo campo
         
         public ICollection<FavoriteCoin>? FavoriteCoins { get; set; }
     }

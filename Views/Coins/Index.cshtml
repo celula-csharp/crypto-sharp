@@ -1,0 +1,27 @@
+@model List<SeguimientoCriptomonedas.Models.Coin>
+
+<h2>Monedas favoritas</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Nombre</th>
+        <th>Símbolo</th>
+        <th>Precio actual (USD)</th>
+        <th>Cambio 24h (%)</th>
+        <th>Ranking</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach(var coin in Model)
+    {
+        <tr>
+            <td>@coin.Name</td>
+            <td>@coin.Symbol</td>
+            <td>@coin.CurrentPrice</td>
+            <td>@(coin.PriceChange24h.HasValue ? coin.PriceChange24h.Value.ToString("F2") : "N/A")</td>
+            <td>@(coin.MarketCapRank.HasValue ? coin.MarketCapRank.Value.ToString() : "N/A")</td>
+        </tr>
+    }
+    </tbody>
+</table>

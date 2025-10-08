@@ -23,6 +23,11 @@ namespace SeguimientoCriptomonedas.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("CoinGeckoId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal?>("CurrentPrice")
                         .HasColumnType("TEXT");
 
