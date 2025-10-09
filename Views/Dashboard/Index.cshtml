@@ -1,0 +1,42 @@
+@model List<SeguimientoCriptomonedas.Models.FavoriteCoin>
+
+@{
+    var prices = ViewBag.RealTimePrices as Dictionary<string, decimal?> 
+                 ?? new Dictionary<string, decimal?>();
+}
+<div class="flex flex-col gap-4">
+    @foreach (var fav in Model)
+    {
+        var coinGeckoId = fav.Coin?.CoinGeckoId;
+        decimal? livePrice = null;
+
+        if (!string.IsNullOrEmpty(coinGeckoId) && prices.ContainsKey(coinGeckoId))
+        {
+            livePrice = prices[coinGeckoId];
+        }
+
+        <div class="p-4 border rounded-lg  hover:shadow-md transition">
+            <h3 class="font-semibold text-lg">@fav.Coin?.Name (@fav.Coin?.Symbol)</h3>
+
+            @if (livePrice != null)
+            {
+                <p>Precio (real-time): @livePrice.Value.ToString("F2") USD</p>
+            }
+            else if (fav.Coin?.CurrentPrice != null)
+            {
+                <p>Precio (local): @fav.Coin.CurrentPrice?.ToString("F2") USD</p>
+            }
+            else
+            {
+                <p class="text-gray-500">Precio no disponible</p>
+            }
+
+            <p>Ranking: @fav.Coin?.MarketCapRank</p>
+
+            <form asp-controller="Favorites" asp-action="Remove" method="post" class="mt-2">
+                <input type="hidden" name="coinId" value="@fav.CoinId" />
+                <button type="submit" class="text-red-500 hover:underline">Quitar de favoritos</button>
+            </form>
+        </div>
+    }
+</div>

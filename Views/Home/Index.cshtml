@@ -1,5 +1,10 @@
 ﻿@model List<SeguimientoCriptomonedas.Models.Coin>
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
+@{
+    var loggedUser = HttpContextAccessor.HttpContext.Session.GetString("LoggedUser");
+    var favoriteIds = ViewBag.FavoriteIds as List<int> ?? new List<int>();
+}
 <h2>Top 10 Criptomonedas</h2>
 
 
@@ -8,34 +13,75 @@
 {
     <div class="flex flex-col gap-2">
         <!-- Header -->
-        <div class="grid grid-cols-[200px_repeat(5,1fr)] gap-2 p-2 border-b border-b-gray-200 text-sm font-medium text-gray-600">
+        <div class="grid grid-cols-[200px_repeat(@(loggedUser != null ? '5' : '4'),1fr)] gap-2 p-2 border-b border-b-gray-200 text-sm font-medium text-gray-600">
             <div class="text-left">Nombre</div>
             <div class="text-center">Símbolo</div>
-            <div class="text-center">Precio</div>
             <div class="text-center">Precio (USD)</div>
             <div class="text-center">Cambio 24h (%)</div>
             <div class="text-center">Ranking</div>
+            @if (!string.IsNullOrEmpty(loggedUser))
+            {
+                <div class="text-center">Acciones</div>
+            }
         </div>
 
         <!-- Body -->
         @foreach (var coin in @Model)
         {
-            <button class="grid grid-cols-[200px_repeat(5,1fr)] gap-2 p-2 border !border-transparent !rounded-2xl hover:bg-gray-100 hover:!border-gray-200 transition duration-[.1s] ease-in-out text-sm text-gray-800 cursor-pointer items-center">
+            var isFavorite = favoriteIds.Contains(coin.Id);
+            <div class="grid grid-cols-[200px_repeat(@(loggedUser != null ? '5' : '4'),1fr)] gap-2 p-2 border !border-transparent !rounded-2xl hover:bg-gray-100 hover:!border-gray-200 transition duration-[.1s] ease-in-out text-sm text-gray-800 cursor-pointer items-center">
                 <div class="flex items-center gap-2">
                     <img class="w-6 h-6 object-contain" src="@coin.Image" alt="@coin.Name Logo"/>
                     <span class="font-semibold">@coin.Name</span>
                 </div>
 
                 <div class="text-center text-gray-500">@coin.Symbol</div>
-
-                <div class="text-center">@coin.CurrentPrice</div>
-
+                
                 <div class="text-center">@coin.CurrentPrice?.ToString("F2")</div>
 
-                <div class="text-center text-green-600 font-medium">@coin.PriceChange24h?.ToString("F2")</div>
+                <div class="text-center @(@coin.PriceChange24h > 0 ? "text-green-600" : "text-red-500") font-medium">@coin.PriceChange24h?.ToString("F2")</div>
 
                 <div class="text-center">@coin.MarketCapRank</div>
-            </button>  
+                
+                @if (!string.IsNullOrEmpty(loggedUser))
+                {
+                    <form asp-controller="Favorites" asp-action="@(isFavorite ? "Remove" : "Add")" method="post" class="text-center">
+                        <input type="hidden" name="coinId" value="@coin.Id" />
+                        <button type="submit" class="hover:bg-gray-200 p-2 !rounded-full transition">
+                            @if (isFavorite)
+                            {
+                                <!-- Corazón lleno -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                     fill="currentColor" stroke="none"
+                                     class="lucide lucide-heart text-red-500">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                                             2 5.42 4.42 3 7.5 3
+                                             c1.74 0 3.41.81 4.5 2.09
+                                             C13.09 3.81 14.76 3 16.5 3
+                                             19.58 3 22 5.42 22 8.5
+                                             c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                            }
+                            else
+                            {
+                                <!-- Corazón vacío con símbolo de agregar -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                                     fill="none" stroke="currentColor" stroke-width="2"
+                                     stroke-linecap="round" stroke-linejoin="round"
+                                     class="lucide lucide-heart-plus">
+                                    <path d="m14.479 19.374-.971.939a2 2 0 0 1-3 .019L5 15
+                                             c-1.5-1.5-3-3.2-3-5.5
+                                             a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0
+                                             A5.49 5.49 0 0 1 22 9.5
+                                             a5.2 5.2 0 0 1-.219 1.49"/>
+                                    <path d="M15 15h6"/>
+                                    <path d="M18 12v6"/>
+                                </svg>
+                            }
+                        </button>
+                    </form>
+                }
+            </div>  
         }
     </div>
 }

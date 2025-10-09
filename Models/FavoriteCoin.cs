@@ -9,14 +9,14 @@ namespace SeguimientoCriptomonedas.Models
         public int Id { get; set; }
 
         [Required]
-        [ForeignKey("User")]
         public int UserId { get; set; }
 
         [Required]
-        [ForeignKey("Coin")]
         public int CoinId { get; set; }
 
+        [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
+        [ForeignKey(nameof(CoinId))]
         public Coin? Coin { get; set; }
         
         public DateTime AddedAt { get; set; } = DateTime.UtcNow;

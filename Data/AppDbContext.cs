@@ -17,7 +17,6 @@ namespace SeguimientoCriptomonedas.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            //  Configurar relación muchos a muchos entre User y Coin
             modelBuilder.Entity<FavoriteCoin>()
                 .HasOne(fc => fc.User)
                 .WithMany(u => u.FavoriteCoins)
@@ -30,7 +29,6 @@ namespace SeguimientoCriptomonedas.Data
                 .HasForeignKey(fc => fc.CoinId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            //  Índices únicos (opcional, para evitar duplicados)
             modelBuilder.Entity<FavoriteCoin>()
                 .HasIndex(fc => new { fc.UserId, fc.CoinId })
                 .IsUnique();
